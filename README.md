@@ -19,7 +19,7 @@ bacon e2e                     # run Playwright tests (requires `bacon start` to 
 
 ## Deploy
 
-Currently no public docker image is hosted. You'll need to build `Dockerfile`.
+A minimal docker-compose.yml is provided using [the public Docker hub image](https://hub.docker.com/r/steamwings/are-you-going).
 
 Copy [.env.sample](./.env.sample) to `.env` wherever you're deploying and populate the values with real ones.
 

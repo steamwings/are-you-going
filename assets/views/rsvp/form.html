@@ -48,8 +48,8 @@
     {% endif %}
 
     <label>
-        <input type="checkbox" name="sms_opt_out" {% if rsvp and not rsvp.sms_opt_in %}checked{% endif %}>
-        Would you like to opt-out of text reminders?
+        <input type="checkbox" name="sms_opt_in" {% if rsvp and rsvp.sms_opt_in %}checked{% endif %}>
+        Check to receive event updates and reminders via text
     </label>
 
     <button type="submit">Submit RSVP</button>

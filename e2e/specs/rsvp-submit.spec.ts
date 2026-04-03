@@ -52,9 +52,9 @@ test.describe('RSVP submit', () => {
     expect(isValid).toBe(false);
   });
 
-  test('opt-out checkbox is unchecked by default', async ({ page, fixtureSlug }) => {
+  test('opt-in checkbox is unchecked by default', async ({ page, fixtureSlug }) => {
     await page.goto(`/e/${fixtureSlug}`);
-    await expect(page.locator('input[name="sms_opt_out"]')).not.toBeChecked();
+    await expect(page.locator('input[name="sms_opt_in"]')).not.toBeChecked();
   });
 
   test('404 for unknown event slug', async ({ page }) => {

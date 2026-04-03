@@ -1,4 +1,5 @@
-use axum::extract::{Path, Query};
+use axum::extract::Path;
+use axum::extract::Query;
 use axum::response::IntoResponse;
 use loco_rs::prelude::*;
 use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait, IntoActiveModel};
@@ -22,7 +23,7 @@ pub struct RsvpForm {
     pub phone_number: String,
     pub party_size: Option<String>,
     pub kids_count: Option<String>,
-    pub sms_opt_out: Option<String>,
+    pub sms_opt_in: Option<String>,
     pub allergies: Option<String>,
     pub custom_response: Option<String>,
 }
@@ -139,45 +140,38 @@ async fn submit_rsvp(
         }
     };
 
+    let sms_opt_in = form.sms_opt_in.is_some();
+
     let rsvp = rsvps::ActiveModel::new(
         event.id,
         form.name.as_deref().unwrap_or(""),
         &phone,
         party_size,
         kids_count,
-        form.sms_opt_out.is_none(),
+        sms_opt_in,
         form.allergies.filter(|s| !s.trim().is_empty()),
         form.custom_response.filter(|s| !s.trim().is_empty()),
     );
     rsvp.insert(&ctx.db).await.map_err(|e| Error::wrap(e))?;
 
-    let sms_opt_in = form.sms_opt_out.is_none();
-    let encoded_phone = phone.replace('+', "%2B");
-    format::redirect(&format!(
-        "/e/{}/thanks?phone={}&sms_opt_in={}",
-        slug, encoded_phone, sms_opt_in
-    ))
+    if sms_opt_in {
+        sms_opt_outs::remove_opt_out(&ctx.db, &phone)
+            .await
+            .map_err(|e| Error::wrap(e))?;
+    }
+
+    format::redirect(&format!("/e/{}/thanks", slug))
 }
 
 async fn thanks(
     ViewEngine(v): ViewEngine<TeraView>,
     State(ctx): State<AppContext>,
     Path(slug): Path<String>,
-    Query(query): Query<ThanksQuery>,
 ) -> Result<Response> {
     let event = find_by_slug(&ctx.db, &slug)
         .await
         .map_err(|e| Error::wrap(e))?
         .ok_or_else(|| Error::NotFound)?;
-
-    let mut show_reoptout_prompt = false;
-    if query.sms_opt_in == Some(true) {
-        if let Some(ref phone) = query.phone {
-            show_reoptout_prompt = sms_opt_outs::is_opted_out(&ctx.db, phone)
-                .await
-                .map_err(|e| Error::wrap(e))?;
-        }
-    }
 
     format::render().view(
         &v,
@@ -185,24 +179,8 @@ async fn thanks(
         serde_json::json!({
             "event": event,
             "slug": slug,
-            "show_reoptout_prompt": show_reoptout_prompt,
-            "phone": query.phone,
         }),
     )
-}
-
-async fn reenable_sms(
-    State(ctx): State<AppContext>,
-    Path(slug): Path<String>,
-    Form(form): Form<ReenableSmsForm>,
-) -> Result<Response> {
-    let normalized = rsvps_model::normalize_phone(&form.phone)
-        .map_err(|e| Error::string(&e))?;
-    sms_opt_outs::remove_opt_out(&ctx.db, &normalized)
-        .await
-        .map_err(|e| Error::wrap(e))?;
-    tracing::info!(phone = %normalized, "SMS opt-out removed by user re-enable");
-    format::redirect(&format!("/e/{}/thanks", slug))
 }
 
 async fn edit_phone_form(
@@ -400,33 +378,26 @@ async fn update_rsvp(
     };
     let allergies_text = form.allergies.filter(|s| !s.trim().is_empty());
 
+    let sms_opt_in = form.sms_opt_in.is_some();
+
     let mut active: rsvps::ActiveModel = rsvp.into_active_model();
     active.name = ActiveValue::set(form.name.unwrap_or_default());
-    active.phone_number = ActiveValue::set(phone);
+    active.phone_number = ActiveValue::set(phone.clone());
     active.party_size = ActiveValue::set(party_size);
     active.kids_count = ActiveValue::set(kids_count);
-    active.sms_opt_in = ActiveValue::set(form.sms_opt_out.is_none());
+    active.sms_opt_in = ActiveValue::set(sms_opt_in);
     active.has_allergies = ActiveValue::set(allergies_text.as_ref().map_or(false, |s| !s.is_empty()));
     active.allergies_text = ActiveValue::set(allergies_text);
     active.custom_response = ActiveValue::set(form.custom_response.filter(|s| !s.trim().is_empty()));
-    let updated = active.update(&ctx.db).await.map_err(|e| Error::wrap(e))?;
+    active.update(&ctx.db).await.map_err(|e| Error::wrap(e))?;
 
-    let encoded_phone = updated.phone_number.replace('+', "%2B");
-    format::redirect(&format!(
-        "/e/{}/thanks?phone={}&sms_opt_in={}",
-        slug, encoded_phone, updated.sms_opt_in
-    ))
-}
+    if sms_opt_in {
+        sms_opt_outs::remove_opt_out(&ctx.db, &phone)
+            .await
+            .map_err(|e| Error::wrap(e))?;
+    }
 
-#[derive(Deserialize)]
-struct ThanksQuery {
-    phone: Option<String>,
-    sms_opt_in: Option<bool>,
-}
-
-#[derive(Deserialize)]
-struct ReenableSmsForm {
-    phone: String,
+    format::redirect(&format!("/e/{}/thanks", slug))
 }
 
 #[derive(Deserialize)]
@@ -457,5 +428,4 @@ pub fn routes() -> Routes {
         .add("/{slug}/edit", post(send_magic_link))
         .add("/{slug}/edit/{token}", get(edit_form))
         .add("/{slug}/edit/{token}", post(update_rsvp))
-        .add("/{slug}/reenable-sms", post(reenable_sms))
 }
