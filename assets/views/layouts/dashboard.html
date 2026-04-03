@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - are you going?</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/dashboard/events/new">New Event</a>
+        </nav>
+        <h1>{% block heading %}Dashboard{% endblock %}</h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>are you going? v{{ app_version() }}</p>
+    </footer>
+</body>
+</html>

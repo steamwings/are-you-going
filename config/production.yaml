@@ -1,0 +1,53 @@
+logger:
+  enable: true
+  pretty_backtrace: false
+  level: info
+  format: json
+
+server:
+  port: 5150
+  binding: 0.0.0.0
+  host: {{ get_env(name="BASE_URL", default="http://localhost:5150") }}
+  middlewares:
+    static:
+      enable: true
+      must_exist: true
+      precompressed: false
+      folder:
+        uri: "/static"
+        path: "assets/static"
+      fallback: "assets/static/404.html"
+    fallback:
+      enable: true
+      code: 404
+      not_found: >
+        You enter a dimly-lit room and find nothing except...quiet.
+        If you were looking for something, it is long-forgotten,
+        perhaps subsumed by the alluring inanity of these drowsy quarters.
+        The faint patter of rain invites you to curl up with a book.
+
+workers:
+  mode: BackgroundAsync
+
+scheduler:
+  jobs:
+    check_reminders:
+      run: SendRemindersWorker
+      schedule: "0 * * * * *"
+      tags: ["reminders"]
+
+database:
+  uri: {{ get_env(name="DATABASE_URL", default="sqlite:///app/data/production.sqlite?mode=rwc") }}
+  enable_logging: false
+  connect_timeout: 500
+  idle_timeout: 500
+  min_connections: 1
+  max_connections: 5
+  auto_migrate: true
+  dangerously_truncate: false
+  dangerously_recreate: false
+
+auth:
+  jwt:
+    secret: {{ get_env(name="JWT_SECRET", default="change-me-in-production") }}
+    expiration: 604800

@@ -1,0 +1,51 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Edit RSVP - {{ event.name }}{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Edit your RSVP</h1>
+    <p>{{ event.name }}: {{ event.description }}</p>
+</header>
+
+{% if error %}
+<p class="notice"><mark>{{ error }}</mark></p>
+{% endif %}
+
+<form method="post" action="/e/{{ event.slug }}/edit/{{ token }}">
+    {% if field_config.show_name %}
+    <label for="name">Your name</label>
+    <input type="text" id="name" name="name" value="{{ rsvp.name }}">
+    {% endif %}
+
+    <label for="phone_number">Your phone number</label>
+    <input type="tel" id="phone_number" name="phone_number" required value="{{ rsvp.phone_number }}">
+
+    {% if field_config.show_party_size %}
+    <label for="party_size">How many people (including yourself)?</label>
+    <input type="number" id="party_size" name="party_size" min="1" max="999" value="{{ rsvp.party_size }}">
+    {% endif %}
+
+    {% if field_config.show_kids_count %}
+    <label for="kids_count">How many kids?</label>
+    <input type="number" id="kids_count" name="kids_count" min="0" max="999" value="{{ rsvp.kids_count }}">
+    {% endif %}
+
+    {% if field_config.show_allergies %}
+    <label for="allergies">Any allergies or dietary restrictions?</label>
+    <input type="text" id="allergies" name="allergies" placeholder="e.g. nuts, gluten-free" value="{{ rsvp.allergies_text | default(value='') }}">
+    {% endif %}
+
+    {% if field_config.custom_prompt %}
+    <label for="custom_response">{{ field_config.custom_prompt }}</label>
+    <input type="text" id="custom_response" name="custom_response" value="{{ rsvp.custom_response | default(value='') }}">
+    {% endif %}
+
+    <label>
+        <input type="checkbox" name="sms_opt_out" {% if not rsvp.sms_opt_in %}checked{% endif %}>
+        Would you like to opt-out of text reminders?
+    </label>
+
+    <button type="submit">Update RSVP</button>
+</form>
+{% endblock %}

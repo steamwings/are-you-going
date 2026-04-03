@@ -1,0 +1,11 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Check your phone - {{ event.name }}{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Check your phone!</h1>
+</header>
+<p>We've sent a text message with a link to edit your RSVP for <strong>{{ event.name }}</strong>.</p>
+<p>The link will expire in a few minutes.</p>
+{% endblock %}

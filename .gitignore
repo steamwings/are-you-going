@@ -1,0 +1,16 @@
+# misc
+reference/
+tmp/
+.env
+
+# Rust
+target/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# E2E
+e2e/.auth/dashboard.json
+e2e/node_modules/
+e2e/playwright-report/
+e2e/test-results/

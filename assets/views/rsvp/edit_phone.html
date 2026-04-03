@@ -1,0 +1,27 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Edit RSVP - {{ event.name }}{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Edit your RSVP</h1>
+    <p>To edit your RSVP for <strong>{{ event.name }}</strong>, enter your phone number:</p>
+</header>
+
+{% if error %}
+<p class="notice"><mark>{{ error }}</mark></p>
+{% endif %}
+
+<form method="post" action="/e/{{ event.slug }}/edit">
+    <label for="phone_number">Your phone number</label>
+    <input type="tel" id="phone_number" name="phone_number" required
+           placeholder="+1 (555) 123-4567" autofocus
+           hx-get="/e/phone/format"
+           hx-trigger="blur"
+           hx-swap="outerHTML"
+           hx-include="this">
+    <button type="submit">Send Edit Link</button>
+</form>
+
+<p><small>We'll text you a link to edit your RSVP.</small></p>
+{% endblock %}

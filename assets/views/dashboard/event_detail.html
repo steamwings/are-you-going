@@ -1,0 +1,70 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}{{ event.name }}{% endblock %}
+{% block heading %}{{ event.name }}{% endblock %}
+
+{% block content %}
+<p>{{ event.description }}</p>
+<p>Public link: <a href="{{ public_url }}">{{ public_url }}</a></p>
+<p>Created: {{ created_at }}</p>
+<p><a href="/dashboard/events/{{ event.id }}/edit">Edit Event</a></p>
+<form method="POST" action="/dashboard/events/{{ event.id }}/delete" onsubmit="return confirm('Are you sure you want to permanently delete this event?')">
+  <button type="submit">Delete Event</button>
+</form>
+
+<h2>RSVPs ({{ rsvp_count }})</h2>
+{% if rsvps | length == 0 %}
+<p>No RSVPs yet.</p>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Party Size</th>
+            {% if field_config.show_kids_count %}<th>Kids</th>{% endif %}
+            <th>SMS Opt-in</th>
+            {% if field_config.show_allergies %}<th>Allergies</th>{% endif %}
+            {% if field_config.custom_prompt %}<th>{{ field_config.custom_prompt }}</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for rsvp in rsvps %}
+        <tr>
+            <td>{{ rsvp.name }}</td>
+            <td>{{ rsvp.phone_number }}</td>
+            <td>{{ rsvp.party_size }}</td>
+            {% if field_config.show_kids_count %}<td>{{ rsvp.kids_count }}</td>{% endif %}
+            <td>{% if rsvp.sms_opt_in %}Yes{% else %}No{% endif %}</td>
+            {% if field_config.show_allergies %}<td>{{ rsvp.allergies_text | default(value="") }}</td>{% endif %}
+            {% if field_config.custom_prompt %}<td>{{ rsvp.custom_response | default(value="") }}</td>{% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>Reminders</h2>
+{% if reminders | length == 0 %}
+<p>No reminders configured.</p>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            <th>Send At ({{ timezone }})</th>
+            <th>Message</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reminder in reminders %}
+        <tr>
+            <td>{{ reminder.remind_at_local }}</td>
+            <td>{{ reminder.message }}</td>
+            <td>{% if reminder.sent_at_local %}Sent {{ reminder.sent_at_local }}{% else %}Pending{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+services:
+  app:
+    image: steamwings/are-you-going:latest
+    ports:
+      - "5150:5150"
+    env_file:
+      - .env
+    volumes:
+      - app-data:/app/data
+    restart: unless-stopped
+volumes:
+  app-data:

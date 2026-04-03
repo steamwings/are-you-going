@@ -1,0 +1,33 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Events{% endblock %}
+{% block heading %}Events{% endblock %}
+
+{% block content %}
+<p><a href="/dashboard/events/new">Create New Event</a></p>
+
+{% if events | length == 0 %}
+<p>No events yet. Create your first one!</p>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>RSVPs</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td><a href="/dashboard/events/{{ event.id }}">{{ event.name }}</a></td>
+            <td><code>{{ event.slug }}</code></td>
+            <td>{{ event.rsvp_count }}</td>
+            <td><a href="/dashboard/events/{{ event.id }}/edit">Edit</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

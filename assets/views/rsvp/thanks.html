@@ -1,0 +1,20 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Thanks! - {{ event.name }}{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Thanks for your response!</h1>
+</header>
+<p>Your RSVP for <strong>{{ event.name }}</strong> has been recorded.</p>
+{% if show_reoptout_prompt %}
+<section>
+    <p>You previously opted out of SMS notifications. Would you like to re-enable them?</p>
+    <form method="POST" action="/e/{{ slug }}/reenable-sms">
+        <input type="hidden" name="phone" value="{{ phone }}">
+        <button type="submit">Enable SMS notifications</button>
+    </form>
+</section>
+{% endif %}
+<p><a href="/e/{{ slug }}/edit">Edit my RSVP</a></p>
+{% endblock %}
