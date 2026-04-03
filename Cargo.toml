@@ -37,6 +37,7 @@ rand = { version = "0.8" }
 phonenumber = { version = "0.3" }
 tower-http = { version = "0.6", features = ["normalize-path"] }
 tera = { version = "1.19" }
+pulldown-cmark = { version = "0.12", default-features = false, features = ["html"] }
 
 [[bin]]
 name = "are_you_going-cli"

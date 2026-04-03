@@ -5,7 +5,7 @@
 {% block content %}
 <header>
     <h1>Edit your RSVP</h1>
-    <p>{{ event.name }}: {{ event.description }}</p>
+    <p>{{ event.name }}: {{ event.description | markdown | safe }}</p>
 </header>
 
 {% if error %}

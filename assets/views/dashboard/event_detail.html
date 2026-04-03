@@ -4,7 +4,7 @@
 {% block heading %}{{ event.name }}{% endblock %}
 
 {% block content %}
-<p>{{ event.description }}</p>
+{{ event.description | markdown | safe }}
 <p>Public link: <a href="{{ public_url }}">{{ public_url }}</a></p>
 <p>Created: {{ created_at }}</p>
 <p><a href="/dashboard/events/{{ event.id }}/edit">Edit Event</a></p>

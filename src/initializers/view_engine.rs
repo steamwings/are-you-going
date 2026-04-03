@@ -24,6 +24,16 @@ impl Initializer for ViewEngineInitializer {
                         .map_err(|e| tera::Error::msg(e.to_string()))?)
                 },
             );
+            t.register_filter(
+                "markdown",
+                |value: &tera::Value, _args: &std::collections::HashMap<String, tera::Value>| {
+                    let src = value.as_str().unwrap_or("");
+                    let parser = pulldown_cmark::Parser::new(src);
+                    let mut html = String::new();
+                    pulldown_cmark::html::push_html(&mut html, parser);
+                    Ok(tera::to_value(html).map_err(|e| tera::Error::msg(e.to_string()))?)
+                },
+            );
             Ok(())
         })?;
         Ok(router.layer(Extension(ViewEngine::from(tera_engine))))
